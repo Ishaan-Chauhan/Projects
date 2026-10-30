@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bug Squash</title>
+<style>
+  :root{
+    --bg:#f6f7fb; --card:#ffffff; --ink:#1f2330; --muted:#5d6475; --line:#1f2330;
+    --blue:#1a73e8; --red:#ea4335; --yellow:#fbbc04; --green:#34a853;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){ --bg:#14161d; --card:#1e212b; --ink:#f1f3f8; --muted:#a3abbd; --line:#f1f3f8; }
+  }
+  :root[data-theme="dark"]{ --bg:#14161d; --card:#1e212b; --ink:#f1f3f8; --muted:#a3abbd; --line:#f1f3f8; }
+  html{ color-scheme:light dark; scroll-padding-top:env(safe-area-inset-top,0px); }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; min-height:100vh; background:var(--bg); color:var(--ink);
+    font-family:ui-rounded,"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+    display:flex; flex-direction:column; align-items:center; padding:20px 16px 32px;
+    -webkit-user-select:none; user-select:none; touch-action:manipulation;
+  }
+  h1{ margin:4px 0 2px; font-size:clamp(34px,8vw,48px); font-weight:800; letter-spacing:-.02em; }
+  .tag{ margin:0 0 18px; color:var(--muted); text-align:center; max-width:34ch; }
+
+  .stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; width:100%; max-width:460px; margin-bottom:16px; }
+  .stat{ background:var(--card); border:3px solid var(--line); border-radius:14px; padding:8px 6px; text-align:center; box-shadow:4px 4px 0 var(--line); }
+  .stat b{ display:block; font-size:24px; font-variant-numeric:tabular-nums; }
+  .stat span{ font-size:12px; color:var(--muted); }
+  .stat:nth-child(1){ box-shadow:4px 4px 0 var(--blue); }
+  .stat:nth-child(2){ box-shadow:4px 4px 0 var(--red); }
+  .stat:nth-child(3){ box-shadow:4px 4px 0 var(--yellow); }
+  .stat:nth-child(4){ box-shadow:4px 4px 0 var(--green); }
+  #time.low{ color:var(--red); }
+
+  .board-wrap{ position:relative; width:100%; max-width:460px; }
+  .board{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  .hole{
+    position:relative; aspect-ratio:1; border-radius:28px; overflow:hidden; cursor:pointer;
+    border:3px solid var(--line); background:var(--card); padding:0; color:inherit;
+    display:flex; align-items:flex-end; justify-content:center;
+  }
+  .hole:nth-child(4n+1){ background:color-mix(in srgb,var(--blue) 22%,var(--card)); }
+  .hole:nth-child(4n+2){ background:color-mix(in srgb,var(--red) 22%,var(--card)); }
+  .hole:nth-child(4n+3){ background:color-mix(in srgb,var(--yellow) 28%,var(--card)); }
+  .hole:nth-child(4n){ background:color-mix(in srgb,var(--green) 22%,var(--card)); }
+  .hole:focus-visible{ outline:3px solid var(--blue); outline-offset:3px; }
+  .critter{ font-size:clamp(40px,12vw,60px); line-height:1; transform:translateY(110%); transition:transform .12s ease-out; pointer-events:none; margin-bottom:12%; }
+  .hole.up .critter{ transform:translateY(0); }
+  .hole.squash{ animation:squash .25s ease; }
+  .hole.oops{ animation:shake .3s ease; border-color:var(--red); }
+  @keyframes squash{ 50%{ transform:scale(.9); } }
+  @keyframes shake{ 25%{ transform:translateX(-6px); } 75%{ transform:translateX(6px); } }
+  .pts{ position:absolute; top:14%; left:0; right:0; text-align:center; font-weight:800; font-size:22px; pointer-events:none; animation:rise .6s ease-out forwards; }
+  @keyframes rise{ from{ opacity:1; transform:translateY(0); } to{ opacity:0; transform:translateY(-22px); } }
+
+  .msg{ min-height:24px; margin:14px 0 0; font-weight:600; text-align:center; }
+
+  .panel{
+    position:absolute; inset:-6px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+    background:color-mix(in srgb,var(--bg) 92%,transparent); border:3px solid var(--line); border-radius:28px;
+    text-align:center; padding:20px; box-shadow:8px 8px 0 var(--yellow);
+  }
+  .panel[hidden]{ display:none; }
+  .panel h2{ margin:0; font-size:28px; }
+  .panel p{ margin:0; color:var(--muted); max-width:30ch; }
+  .rank{ font-size:22px; font-weight:800; color:var(--blue); }
+  .go{
+    margin-top:6px; font:inherit; font-size:20px; font-weight:800; color:#fff; background:var(--blue);
+    border:3px solid var(--line); border-radius:999px; padding:10px 28px; cursor:pointer; box-shadow:4px 4px 0 var(--line);
+  }
+  .go:active{ transform:translate(3px,3px); box-shadow:0 0 0 var(--line); }
+  .go:focus-visible{ outline:3px solid var(--yellow); outline-offset:3px; }
+  .hint{ margin-top:20px; color:var(--muted); font-size:14px; text-align:center; }
+
+  @media (prefers-reduced-motion:reduce){ *{ animation:none!important; transition:none!important; } }
+</style>
+</head>
+<body>
+  <h1>Bug Squash</h1>
+  <p class="tag">Squash the bugs before they hide. Don’t hit the features.</p>
+
+  <div class="stats">
+    <div class="stat"><b id="score">0</b><span>Score</span></div>
+    <div class="stat"><b id="time">30</b><span>Seconds</span></div>
+    <div class="stat"><b id="combo">0</b><span>Combo</span></div>
+    <div class="stat"><b id="best">0</b><span>Best</span></div>
+  </div>
+
+  <div class="board-wrap">
+    <div class="board" id="board"></div>
+    <div class="panel" id="panel">
+      <h2 id="pTitle">Ready to debug?</h2>
+      <div class="rank" id="pRank" hidden></div>
+      <p id="pText">Tap a 🐛 to squash it. Hitting a ⭐ feature costs you points. Streaks score more.</p>
+      <button class="go" id="go">Start</button>
+    </div>
+  </div>
+
+  <p class="msg" id="msg" aria-live="polite"></p>
+  <p class="hint">Keyboard: press 1 to 9 to hit the matching hole (left to right, top to bottom).</p>
+
+<script>
+/* ---------- Settings ---------- */
+const HOLES = 9;
+const GAME_SECONDS = 30;
+
+/* ---------- State: everything the game needs to remember ---------- */
+let state = { score:0, time:GAME_SECONDS, combo:0, running:false, best:0 };
+let active = Array(HOLES).fill(null);   // active[i] = {type, timer} when a critter is up in hole i
+let spawnTimer = null, clockTimer = null;
+
+/* ---------- Helpers ---------- */
+const $ = id => document.getElementById(id);
+const board = $("board");
+
+// Best score survives page reloads thanks to localStorage (wrapped in try/catch in case it is blocked)
+try { state.best = Number(localStorage.getItem("bugsquash_best")) || 0; } catch (e) {}
+
+// Build the 9 holes once
+for (let i = 0; i < HOLES; i++) {
+  const b = document.createElement("button");
+  b.className = "hole";
+  b.setAttribute("aria-label", "Hole " + (i + 1));
+  b.innerHTML = '<span class="critter" aria-hidden="true"></span>';
+  b.addEventListener("pointerdown", () => hit(i));   // pointerdown reacts faster than click on phones
+  board.appendChild(b);
+}
+const holes = [...board.children];
+
+function updateHud() {
+  $("score").textContent = state.score;
+  $("time").textContent = state.time;
+  $("time").classList.toggle("low", state.time <= 5);
+  $("combo").textContent = state.combo;
+  $("best").textContent = state.best;
+}
+
+function say(text) { $("msg").textContent = text; }
+
+/* ---------- Difficulty: gets harder as time runs out ---------- */
+const elapsed   = () => GAME_SECONDS - state.time;
+const lifespan  = () => Math.max(500, 1200 - elapsed() * 20);  // how long a critter stays up (ms)
+const spawnGap  = () => Math.max(350, 800 - elapsed() * 14);   // wait before the next critter (ms)
+
+/* ---------- Spawning ---------- */
+function showCritter() {
+  const free = active.map((a, i) => a ? -1 : i).filter(i => i >= 0);
+  if (!free.length) return;
+  const i = free[Math.floor(Math.random() * free.length)];
+  const type = Math.random() < 0.18 ? "feature" : "bug";     // about 1 in 5 is a decoy
+  holes[i].querySelector(".critter").textContent = type === "bug" ? "🐛" : "⭐";
+  holes[i].classList.add("up");
+  // If the player is too slow, the critter hides again (and a missed bug breaks the combo)
+  const timer = setTimeout(() => {
+    if (type === "bug") { state.combo = 0; updateHud(); }
+    hide(i);
+  }, lifespan());
+  active[i] = { type, timer };
+}
+
+function spawnLoop() {
+  if (!state.running) return;
+  showCritter();
+  spawnTimer = setTimeout(spawnLoop, spawnGap());
+}
+
+function hide(i) {
+  if (active[i]) clearTimeout(active[i].timer);
+  active[i] = null;
+  holes[i].classList.remove("up");
+}
+
+/* ---------- Hitting ---------- */
+function flash(i, cls) {
+  holes[i].classList.remove("squash", "oops");
+  void holes[i].offsetWidth;            // restart the CSS animation
+  holes[i].classList.add(cls);
+}
+
+function floatText(i, text, color) {
+  const s = document.createElement("span");
+  s.className = "pts"; s.textContent = text; s.style.color = color;
+  holes[i].appendChild(s);
+  setTimeout(() => s.remove(), 600);
+}
+
+function hit(i) {
+  if (!state.running || !active[i]) return;
+  const { type } = active[i];
+  if (type === "bug") {
+    state.combo++;
+    const pts = 10 + Math.min(state.combo - 1, 10) * 2;    // streak bonus, capped
+    state.score += pts;
+    flash(i, "squash"); floatText(i, "+" + pts, "var(--green)");
+    say(state.combo >= 3 ? "🔥 " + state.combo + " in a row!" : "");
+  } else {
+    state.score = Math.max(0, state.score - 15);
+    state.combo = 0;
+    flash(i, "oops"); floatText(i, "-15", "var(--red)");
+    say("That’s a feature, not a bug!");
+  }
+  hide(i);
+  updateHud();
+}
+
+/* ---------- Game flow ---------- */
+function startGame() {
+  state = { ...state, score:0, time:GAME_SECONDS, combo:0, running:true };
+  active.forEach((_, i) => hide(i));
+  say(""); updateHud();
+  $("panel").hidden = true;
+  clockTimer = setInterval(() => {
+    state.time--; updateHud();
+    if (state.time <= 0) endGame();
+  }, 1000);
+  spawnLoop();
+}
+
+function rankFor(score) {
+  if (score < 100) return "Intern";
+  if (score < 250) return "Junior Dev";
+  if (score < 400) return "Mid-level Dev";
+  if (score < 550) return "Senior Dev";
+  return "Staff Engineer";
+}
+
+function endGame() {
+  state.running = false;
+  clearInterval(clockTimer); clearTimeout(spawnTimer);
+  active.forEach((_, i) => hide(i));
+  const isBest = state.score > state.best;
+  if (isBest) {
+    state.best = state.score;
+    try { localStorage.setItem("bugsquash_best", String(state.best)); } catch (e) {}
+  }
+  updateHud();
+  $("pTitle").textContent = "Time’s up! Score: " + state.score;
+  $("pRank").hidden = false;
+  $("pRank").textContent = rankFor(state.score);
+  $("pText").textContent = isBest ? "New best score! Can you beat it?" : "Best so far: " + state.best + ". Try again?";
+  $("go").textContent = "Play again";
+  $("panel").hidden = false;
+  $("go").focus();
+}
+
+$("go").addEventListener("click", startGame);
+
+// Keyboard support: keys 1 to 9 hit holes 0 to 8
+document.addEventListener("keydown", e => {
+  if (e.key >= "1" && e.key <= "9") hit(Number(e.key) - 1);
+});
+
+updateHud();
+</script>
+</body>
+</html>
