@@ -1,0 +1,552 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy 18th Birthday!</title>
+    <style>
+        :root {
+            --bg-color: #f4f1ea; 
+            --text-color: #4a4a4a;
+            --accent-color: #d1e7dd; 
+            --button-color: #eae6df;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #e5dfd3;
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Ambient Background Sparkle Effects */
+        .ambient-sparkle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: floatUp 8s linear infinite;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) translateX(0) scale(0); opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { transform: translateY(-10vh) translateX(50px) scale(1); opacity: 0; }
+        }
+
+        .phone-container {
+            width: 100%;
+            max-width: 420px;
+            height: 100vh;
+            max-height: 850px;
+            background: var(--bg-color);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border-radius: 24px;
+            border: 4px solid #ffffff;
+        }
+
+        /* FIX: Slide Animation CSS */
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex; 
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 35px;
+            text-align: center;
+            background: var(--bg-color);
+            
+            /* The fix for the invisible blocking */
+            opacity: 0;
+            visibility: hidden;
+            z-index: 1;
+            transform: translateY(10px);
+            transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            z-index: 10;
+            transform: translateY(0);
+        }
+
+        h2 {
+            font-size: 1.7rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        p {
+            font-size: 1.05rem;
+            line-height: 1.5;
+            color: #666;
+        }
+
+        /* Passcode Display Grid Layout */
+        .keypad-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            margin-top: 25px;
+        }
+
+        .passcode-display {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 35px;
+        }
+
+        .dot {
+            width: 48px;
+            height: 48px;
+            border: 2px solid #ccc9bf;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.4rem;
+            font-weight: bold;
+            background: #faf9f6;
+            transition: all 0.2s ease;
+        }
+
+        .dot.active-dot {
+            border-color: #8fa89b;
+            background: #eef7f2;
+            transform: scale(1.05);
+        }
+
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+            width: 85%;
+        }
+
+        .key {
+            background: var(--button-color);
+            border: none;
+            border-radius: 50%;
+            width: 68px;
+            height: 68px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background 0.2s, transform 0.1s;
+            margin: 0 auto;
+            color: #444;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.03);
+        }
+
+        .key:active {
+            background: #dcd7ce;
+            transform: scale(0.92);
+        }
+
+        .btn-action {
+            margin-top: 30px;
+            padding: 14px 35px;
+            background: #4a4a4a;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .btn-action:active {
+            transform: scale(0.96);
+        }
+
+        /* Graphic/Character Circles */
+        .graphic-placeholder {
+            width: 160px;
+            height: 160px;
+            background: #eae6df;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4.5rem;
+            margin-bottom: 30px;
+            user-select: none;
+            box-shadow: inset 0 4px 10px rgba(0,0,0,0.03);
+        }
+
+        /* Slide 3: Cake Asset Interactions */
+        .cake-container {
+            position: relative;
+            margin: 25px 0;
+        }
+        .cake-graphic {
+            font-size: 6.5rem;
+            cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            user-select: none;
+        }
+        .cake-graphic:hover {
+            transform: scale(1.05);
+        }
+        .cake-graphic:active {
+            transform: scale(0.95);
+        }
+        
+        .hidden-wish {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.5s ease;
+            margin-top: 25px;
+            padding: 18px;
+            background: #faf9f6;
+            border-radius: 16px;
+            border: 2px dashed #ccc9bf;
+        }
+        .hidden-wish.reveal {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Slide 5: Interactive Mini-Game Gifts */
+        .gifts-container {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin: 35px 0;
+        }
+        .gift-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            width: 30%;
+            transition: transform 0.2s;
+        }
+        .gift-box:active {
+            transform: scale(0.9);
+        }
+        .gift-icon {
+            font-size: 3.5rem;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .gift-box.opened .gift-icon {
+            transform: scale(1.15) rotate(5deg);
+        }
+        .gift-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-top: 8px;
+            color: #777;
+        }
+        .gift-reveal-text {
+            min-height: 70px;
+            margin-top: 20px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #333;
+            padding: 12px 20px;
+            background: rgba(255,255,255,0.4);
+            border-radius: 12px;
+            width: 100%;
+        }
+
+        /* Nav Engine Elements */
+        .nav-container {
+            position: absolute;
+            bottom: 35px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding: 0 35px;
+        }
+        .btn-next {
+            padding: 14px 45px;
+            background: var(--accent-color);
+            color: #3b5246;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.06);
+            transition: background 0.2s, transform 0.2s;
+        }
+        .btn-next:active {
+            transform: scale(0.97);
+        }
+
+        /* Particle Confetti Asset Pieces */
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            border-radius: 2px;
+            animation: fall 3s ease-out forwards;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-10px) translateX(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(850px) translateX(100px) rotate(720deg); opacity: 0; }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+        .bounce {
+            animation: bounce 0.5s ease infinite alternate;
+        }
+    </style>
+</head>
+<body>
+
+<script>
+    // Build ambient subtle canvas sparkle look
+    for (let i = 0; i < 15; i++) {
+        let sparkle = document.createElement('div');
+        sparkle.className = 'ambient-sparkle';
+        sparkle.style.left = Math.random() * 100 + 'vw';
+        sparkle.style.width = sparkle.style.height = Math.random() * 6 + 4 + 'px';
+        sparkle.style.animationDelay = Math.random() * 5 + 's';
+        sparkle.style.animationDuration = Math.random() * 5 + 6 + 's';
+        document.body.appendChild(sparkle);
+    }
+</script>
+
+<div class="phone-container" id="main-stage">
+
+    <div class="slide active" id="slide1">
+        <div class="graphic-placeholder">🐧</div>
+        <h2>Enter Passcode</h2>
+        <p style="font-size: 0.95rem; margin-bottom: 5px;">Enter the code to unlock the birthday roast</p>
+        
+        <div class="keypad-container">
+            <div class="passcode-display">
+                <div class="dot" id="dot0"></div>
+                <div class="dot" id="dot1"></div>
+                <div class="dot" id="dot2"></div>
+                <div class="dot" id="dot3"></div>
+                <div class="dot" id="dot4"></div>
+            </div>
+            
+            <div class="keypad">
+                <button class="key" onclick="pressKey('1')">1</button>
+                <button class="key" onclick="pressKey('2')">2</button>
+                <button class="key" onclick="pressKey('3')">3</button>
+                <button class="key" onclick="pressKey('4')">4</button>
+                <button class="key" onclick="pressKey('5')">5</button>
+                <button class="key" onclick="pressKey('6')">6</button>
+                <button class="key" onclick="pressKey('7')">7</button>
+                <button class="key" onclick="pressKey('8')">8</button>
+                <button class="key" onclick="pressKey('9')">9</button>
+                <button class="key" onclick="pressKey('/')">/</button>
+                <button class="key" onclick="pressKey('0')">0</button>
+                <button class="key" onclick="clearCode()">⌫</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-error">
+        <div class="graphic-placeholder">❓🐧❓</div>
+        <h2>WRONG PASSCODE</h2>
+        <p style="padding: 0 10px;">Error: You're now officially an adult but still act like a toddler 😂</p>
+        <button class="btn-action" onclick="resetAndTryAgain()">TRY AGAIN</button>
+    </div>
+
+    <div class="slide" id="slide3">
+        <h2>Make a Wish 🎉</h2>
+        <p style="font-size: 0.95rem; color: #888;">Click the cake to blow out candles</p>
+        <div class="cake-container">
+            <div class="cake-graphic" id="cake" onclick="blowCandles()">🎂</div>
+        </div>
+        
+        <div class="hidden-wish" id="wish-text">
+            <p style="font-weight: 600; color: #3b5246;">"Good luck for the rest of your life, if you need help I might help."</p>
+        </div>
+
+        <div class="nav-container" id="nav3" style="display:none;">
+            <button class="btn-next" onclick="goToSlide('slide5')">Next ➔</button>
+        </div>
+    </div>
+
+    <div class="slide" id="slide5">
+        <h2>Click on Gifts to Open 🎁</h2>
+        <p style="font-size: 0.95rem; color:#888;">Choose wisely...</p>
+
+        <div class="gifts-container">
+            <div class="gift-box" onclick="openGift(1, this)">
+                <div class="gift-icon">🎁</div>
+                <div class="gift-label">Gift 1</div>
+            </div>
+            <div class="gift-box" onclick="openGift(2, this)">
+                <div class="gift-icon">🎁</div>
+                <div class="gift-label">Gift 2</div>
+            </div>
+            <div class="gift-box" onclick="openGift(3, this)">
+                <div class="gift-icon">🎁</div>
+                <div class="gift-label">Gift 3</div>
+            </div>
+        </div>
+
+        <div class="gift-reveal-text" id="gift-delivery-msg"></div>
+
+        <div class="nav-container" id="nav5" style="display:none;">
+            <button class="btn-next" onclick="goToSlide('slide6')">Finish Card ➔</button>
+        </div>
+    </div>
+
+    <div class="slide" id="slide6">
+        <div class="graphic-placeholder" style="background:none; font-size:6.5rem; margin-bottom:10px;">🐻</div>
+        <h2 style="font-size: 2.1rem; margin-bottom: 5px;">Happy 18th Birthday!</h2>
+        <p style="color:#222; font-weight: 500; margin-top:25px; padding: 0 15px; font-size: 1.1rem;">
+            "I will annoy you for the rest of your life, this subscription is non-cancellable sed life 😂"
+        </p>
+    </div>
+
+</div>
+
+<script>
+    const targetCode = "11/07";
+    let currentInput = "";
+    let isKeypadLocked = false; 
+
+    function pressKey(num) {
+        if (isKeypadLocked) return;
+
+        if (currentInput.length < 5) {
+            currentInput += num;
+            updateDisplay();
+        }
+        if (currentInput.length === 5) {
+            isKeypadLocked = true; 
+            setTimeout(checkPasscode, 300);
+        }
+    }
+
+    function clearCode() {
+        if (isKeypadLocked) return;
+        currentInput = currentInput.slice(0, -1);
+        updateDisplay();
+    }
+
+    function updateDisplay() {
+        for (let i = 0; i < 5; i++) {
+            const dot = document.getElementById(`dot${i}`);
+            if (currentInput[i]) {
+                dot.textContent = currentInput[i];
+                dot.classList.add('active-dot');
+            } else {
+                dot.textContent = "";
+                dot.classList.remove('active-dot');
+            }
+        }
+    }
+
+    function checkPasscode() {
+        if (currentInput === targetCode) {
+            currentInput = "";
+            updateDisplay();
+            isKeypadLocked = false;
+            goToSlide('slide3');
+        } else {
+            goToSlide('slide-error');
+        }
+    }
+
+    function resetAndTryAgain() {
+        currentInput = ""; 
+        isKeypadLocked = false; 
+        updateDisplay(); 
+        goToSlide('slide1');
+    }
+
+    // FIX: Simplified to cleanly swap the active class so z-index handles the clicks properly
+    function goToSlide(slideId) {
+        const slides = document.querySelectorAll('.slide');
+        slides.forEach(slide => slide.classList.remove('active'));
+        document.getElementById(slideId).classList.add('active');
+    }
+
+    // Interactive Confetti Generator Explosion
+    function spawnConfetti() {
+        const stage = document.getElementById('main-stage');
+        const colors = ['#f2d74e', '#95c7b3', '#9bbfe0', '#eabcb9', '#f1b887'];
+        
+        for (let i = 0; i < 50; i++) {
+            let confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.left = Math.random() * 100 + '%';
+            confetti.style.top = '-5%';
+            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.width = Math.random() * 8 + 6 + 'px';
+            confetti.style.height = Math.random() * 12 + 6 + 'px';
+            confetti.style.animationDelay = Math.random() * 0.4 + 's';
+            confetti.style.animationDuration = Math.random() * 1.5 + 1.5 + 's';
+            stage.appendChild(confetti);
+            
+            setTimeout(() => confetti.remove(), 3000);
+        }
+    }
+
+    function blowCandles() {
+        const wish = document.getElementById('wish-text');
+        const nav = document.getElementById('nav3');
+        
+        spawnConfetti();
+        wish.classList.add('reveal');
+        nav.style.display = "flex";
+    }
+
+    const gifts = {
+        1: '"A lifetime supply of having to listen to my rants"',
+        2: '"1 Waffle but thats it"',
+        3: '"One free \'bail me out\' card per year"'
+    };
+    let openedCount = 0;
+
+    function openGift(id, element) {
+        if (element.classList.contains('opened')) return;
+        
+        element.classList.add('opened');
+        const icon = element.querySelector('.gift-icon');
+        icon.textContent = "🐧";
+        icon.classList.add('bounce');
+        
+        document.getElementById('gift-delivery-msg').textContent = gifts[id];
+        openedCount++;
+        
+        if (openedCount === 3) {
+            document.getElementById('nav5').style.display = "flex";
+        }
+    }
+</script>
+
+</body>
+</html>
